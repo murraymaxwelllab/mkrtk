@@ -859,8 +859,8 @@ function set_directory(pathstring)
 
 % First check if the directory is accessible:
 if isempty( dir(pathstring) ) % dir() should always return at least two entries: . and ..
-    errordlg('This folder is inaccessible','Directory error')
-    return
+    % if it fails for any reason, set to working directory:
+    pathstring = pwd;
 end
 
 % Ensure it contains the trailing filesep
