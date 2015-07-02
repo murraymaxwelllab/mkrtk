@@ -247,6 +247,7 @@ end
 % the path:
 handles.sessionPath = '';   
 guidata(hObject,handles)
+nameFig(handles.figure1)
 
 % Now launch the gui & add update listener:
 pthseed = handles.Images.pth;

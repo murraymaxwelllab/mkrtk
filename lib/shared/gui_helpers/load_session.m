@@ -5,9 +5,10 @@ ok = false;
 % Lock figure:
 locker = FigLocker.Lock(handles.figure1);
 
-% Get file from usesr
+% Get file from user - seed with current session path
+[p,~,~] = fileparts(handles.sessionPath);
 [filename, pathname] = uigetfile(...
-    {'*.mat','MAT-files (*.mat)'},'Load session',handles.sessionPath);
+    {'*.mat','MAT-files (*.mat)'},'Load session',p);
 
 if isequal(filename,0)
     locker.unlock
@@ -26,7 +27,9 @@ ds = dbstack(1);
 if ok
     % Update guidata:
     guidata(handles.figure1,handles)
-
+    
+    % Name the figure with the loaded mat file
+    nameFig(handles.figure1)
 end
 
 locker.unlock;
