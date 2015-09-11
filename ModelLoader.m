@@ -645,9 +645,25 @@ function SmartAddButton_Cbk(hObject, eventdata)
 % files to the appropriate Objects that exist.  If files do match object
 % and category names, they are not dealt out and a list is displayed of the
 % files that failed.
+%
+% Strings must just include a matching object name (eg, "Tibia") and either
+% "static" or "dynamic".  All of the following options are valid:
+%
+%   Tibia - Static.mat
+%   Dynamic Tibia.mat
+%   MGR_010 Calcaneus Static.mat
 
 
+helpstr = ['This function permits loading of multiple files with automatic', ... 
+    ' mapping to appropriate objects in the tree.  The expected format for', ...
+    ' file names is that they must include a matching object name, and', ...
+    ' the text "static" or "dynamic".  Some examples include:\n\n', ...
+    ' Tibia - Static.mat\n Dynamic Tibia.mat\n MGR_010 Calcaneus Static.mat\n'];
 
+uiwait( helpdlg(sprintf(helpstr)) ); % display help dialog and wait for closure
+
+    
+    
 handles = guidata(hObject);
 treeModel = handles.tree.getModel;
 root = treeModel.getRoot();   % Root node
@@ -679,15 +695,23 @@ end
 % could do the tree manipulation/node adding in one hit at the end and the
 % user wouldn't see all the files loading individually.  But that's a fair
 % bit more work...
+
+
+% Lowercase, for string searching/matching 
+filename_lower = lower(filename);
+
+% Get names of objects in the tree:
 objnames = lower( getChildNames(root) );
 no = numel(objnames);
+
+% Cycle through objects in the tree, and add statics or dynamics 
 for oj = 1:no
-    nf = numel(filename);
+    nf = numel(filename_lower);
     inds = (1:nf)';
-    id = ~cellfun(@isempty, strfind(filename,objnames{oj}));
+    id = ~cellfun(@isempty, strfind(filename_lower,objnames{oj}));
     if any(id)
         objNode = root.getChildAt(oj-1);
-        ojfiles = filename(id);
+        ojfiles = filename_lower(id);
         static  = ~cellfun(@isempty,strfind(ojfiles,'static'));
         dynamic = ~cellfun(@isempty,strfind(ojfiles,'dynamic'));
         % Valid soution for static is to have only one file:
@@ -705,7 +729,8 @@ for oj = 1:no
         end
         done = static | dynamic;
         indsj = inds(id);
-        filename(indsj(done)) = [];
+        filename_lower(indsj(done)) = [];
+        filename(indsj(done)) = []; % for checking purposes below
     end
 end
 
