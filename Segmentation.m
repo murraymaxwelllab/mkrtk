@@ -437,97 +437,7 @@ function MI_PreviewROIs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isempty(handles.traces)
-    warndlg('There are no ROIs defined to preview','3D Preview of ROIs','modal')
-    return
-end
-
-% Instigate the figure
-figname = '3D ROI Preview';
-hf = findobj('Type','figure','Name',figname);
-if isempty(hf)
-    hf = figure('Name',figname,'NumberTitle','off','Tag','Prev3D_fig','Visible','off');
-    hax = axes('Parent',hf,'Tag','Prev3D_axes');
-    xlabel(hax,'x');
-    ylabel(hax,'y');
-    zlabel(hax,'z');
-    hold(hax,'on')
-    grid(hax,'on')
-    view(hax,3)
-    
-    % Add listener which will update this display whenever the main program
-    % updates its display.  We hang it on the userdata of the image in the
-    % main program since this is the method UPDATESLICE provides for triggering
-    % listeners. We also store the handle to the listener so that it can be
-    % deleted when this figure is closed:
-    him = findobj(handles.axes1,'Type','image');
-    li = addlistener(him,'UserData','PostSet',@prev3DListener);
-    li.CallbackTarget = handles.figure1;  % Store this
-    
-    % Now store the listener handle in the UserData of the preview figure
-    % so it can be destroyed when the figure is closed:
-    set(hf,'UserData',li)       % Store listener so we can delete it
-    set(hf,'CloseRequestFcn',...% On figure close...
-        'delete(get(gcbf,''UserData''));closereq') % delete the listener
-    set(hf,'Visible','on')
-    
-else
-    figure(hf)
-    
-end
-
-% Trigger the listener
-prev3DListener(handles)
-
-
-% ------------------------------------------------------------------------
-function prev3DListener(varargin)
-% This function updates the 3D ROI preview window which has the tag
-% 'Prev3D_fig' 
-% 
-% Usage:
-% ------
-%   prev3DListener(handles)         % Initialisation call
-%   prev3DListener(hTarget,event)   % Call from a lister which has 'CallbackTarget' set
-
-
-if nargin == 1
-    handles = varargin{:};
-elseif nargin == 2
-    handles = guidata(varargin{1});
-end
-
-% Get the handles to figure and axes:
-hf = findobj('Type','figure','tag','Prev3D_fig');
-hax = findobj(hf,'Type','axes');        
- 
-% Get traces for just this current phase:
-p = current('phase',handles.axes1);
-tf = [handles.traces.Phase] == p;
-R = handles.traces(tf);             % ROIS for phase p
-
-% Graphics problem: % 2011b on mac doesn't display '.' markers that are
-% 6pts or less.  Or is this just because it's a 27" iMac?
-if verLessThan('matlab','7.13')
-    lopts = {'Marker','.'}; % default: MarkerSize==6
-else
-    lopts = {'Marker','.','MarkerSize',7};
-end
-
-% Now clean the axes and plot:
-delete(findobj(hax,'Type','line'));     % Delet all lines
-for j = 1:numel(R)
-    xyz = R(j).to3d;
-    plot3(xyz(:,1),xyz(:,2),xyz(:,3),...
-        'Parent',hax,...
-        lopts{:},...            % Fallback / fix
-        'Color',R(j).Color,...
-        'LineStyle',R(j).LineStyle);
-end
-axis(hax,'tight','equal')
-ns = numel(unique([R.Slice]));
-nr = max([0 j]); % circumvent j = [] problem when no ROIs present
-title(hax,sprintf('Phase %d:  %d ROIs on %d slices',p,nr,ns))
+previewROIs3d(handles)
 
 
 % ------------------------------------------------------------------------
@@ -572,6 +482,8 @@ function MI_Test_Callback(hObject, eventdata, handles)
 % hObject    handle to MI_Test (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Empty menu item available for use in testing new functions
 
 
 
