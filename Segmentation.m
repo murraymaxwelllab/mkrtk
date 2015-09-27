@@ -388,47 +388,47 @@ function MI_ExportROIs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% Export RIOs by colour
 
 if isempty(handles.traces)
     return
 end
-
-% Export RIOs by colour
-
-% We would like to improve this, but for now, it's simple:
 clrs = unique({handles.traces.Color});
-clrs = ColourSpec('ToLongnames',clrs);
-[sel,ok] = listdlg('PromptString','Select object to export:',...
-    'Name','Export ROIs',...
-    'OkString','Export',...
-    'SelectionMode','Single',...
-    'ListSize',[150,150],...
-    'ListString',clrs(:));
+[colorstrings, pathstrings] = exportRoiDialog(clrs);
 
-if ~ok
+% If user cancelled:
+if isempty(colorstrings)
     return
 end
 
-% Reduce ROIs to include only those which are of this colour:
-%   (Note that this includes ROIs across all slices and all phases, if
-%   there is more than one of each/either)
-ROI = handles.traces(strcmpi({handles.traces.Color},clrs{sel})); %#ok<NASGU>
-study = getStudyName(handles.Images.pth);
-
-% Request file location from user:
-seed = [handles.userPath study '_'];
-[fname,pname] = uiputfile('*.mat',['Save ' clrs{sel} ' ROIs'],seed);
-
-if isequal(fname,0)
-    return
+% Save ROIs according to color
+n = numel(colorstrings);
+all_clrs = {handles.traces.Color};
+for j = 1:n
+    % Select ROIs of single color:
+    inds = strcmpi(all_clrs,colorstrings{j});
+    ROI = handles.traces(inds); %#ok<NASGU>
+    
+    
+    % Save - check if file exists:
+    pthj = pathstrings{j};
+    if exist(pthj,'file') == 2
+        [~,f,e] = fileparts(pthj);
+        qstr = ['The file: "' [f e] '" exists. Do you want to overwrite?'];
+        choice = questdlg(qstr,'Overwrite?','Yes','No','No');
+        
+        % Anything other than "Yes" will skip the save
+        if ~isequal(choice,'Yes')
+            continue
+        end
+    end
+    
+    save(pthj,'ROI');
 end
 
 % Update path:
-handles.userPath = pname; 
+handles.userPath = fileparts(pathstrings{end}); 
 guidata(hObject,handles)
-
-% Save:
-save([pname fname],'ROI')
 
 
 % --------------------------------------------------------------------
