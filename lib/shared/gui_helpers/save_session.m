@@ -36,6 +36,9 @@ if ok
     guidata(hObject,handles)
 end
 
+% Name the figure
+nameFig(handles.figure1)
+
 % Unlock figure:
 locker.unlock; 
 

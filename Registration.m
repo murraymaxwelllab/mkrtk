@@ -231,6 +231,10 @@ function MI_NewSession_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 handles = Session.reset('soft',handles);
+
+% Reset the figure name
+nameFig(handles.figure1)
+
 if ~isempty(handles)
     configureView3(handles)
 end
@@ -970,6 +974,14 @@ end
 
 % ------------------------------------------------------------------------
 function solverUpdater(~,event)
+%SOLVERUPDATER Listener callback for getting output from SOLVER
+%
+% This function is a listener callback which gets invoked during the window
+% closing process of SOLVER.  The listener needs to be added by any
+% function which invokes SOLVER and this function gets the output of
+% that GUI and saves/updates all the info in the handles of Registration (on
+% successful close)
+
 
 % Get handles of main GUI & output from closing GUI
 [handles,models] = getGuiOutput(event);
@@ -999,9 +1011,13 @@ if any(tf)
     handles.HelicalAxis(tf) = calcHelicalAxes(handles.HelicalAxis(tf),models);
 end
 
-runCallback(handles.PhaseSlider, 'init')
+% Push updates back to GUI
 guidata(handles.figure1,handles)
 
+% Refresh the view:
+runCallback(handles.PhaseSlider, 'init')
+
+% Unlock the UI
 hl.unlock;
 
 
