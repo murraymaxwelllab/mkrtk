@@ -16,7 +16,8 @@ theta = step_proxy_from_helical();
 function theta = step_proxy_from_helical()
 % This is such a mess....
 
-handles = guidata(findall(0,'type','figure','Name','Registration'));
+fig = findall(0,'type','figure','-regexp','Name','^Registration\w*');
+handles = guidata(fig);
 
 %% Get helical axis & rotation angle
 hax = calcHelicalAxes(handles.HelicalAxis,handles.Models,'raw');

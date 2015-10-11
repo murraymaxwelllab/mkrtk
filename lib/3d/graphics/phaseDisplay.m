@@ -129,7 +129,7 @@ if ~isempty(handles.HelicalAxis)
 end
 
 % ---------- Draw Line of Action
-if ~isempty(handles.LineOfAction)
+if ~isempty(handles.LineOfAction)  && ~isempty(handles.LineOfAction.Point)
     for j = 1:numel(handles.LineOfAction)
         lj = handles.LineOfAction(j);
         if lj.Visible && isfield(lj,'Point') && isfield(lj,'Vector')

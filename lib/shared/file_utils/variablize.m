@@ -1,7 +1,8 @@
 function str = variablize(str)
 % VARIABLIZE Convert string into something safe for a variable name
 %
-% Input can also be a cell array of strings
+% Input can also be a cell array of strings.  Strings will be concatenated
+% with underscores.
 %
 % First replace all non alpha-numeric permitted characters with spaces:
 
@@ -10,8 +11,9 @@ function str = variablize(str)
 if iscell(str)
     str = str(:)';
     str(2,:) = {'_'};
+    str = [str{:}];
 end
-str = [str{:}];
+
 
 rep_idx = ~( isstrprop(str,'alphanum') | str == '_' );
 
