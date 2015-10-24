@@ -290,7 +290,7 @@ end
 C = intersect_surf_plane(S,msp);
 
 % Get main axis of these lines:
-Cpc = princomp(cat(1,C{:}));
+Cpc = pca(cat(1,C{:}));  % pincipal components of all the variables smashed together
 pc1 = Cpc(:,1)';
 pc2 = Cpc(:,2)';
 
@@ -373,8 +373,8 @@ C = trunc(C,ltp,'above');
 C = trunc(C,utp,'below');
 
 
-%% Define a roughly orhtogonal cutting plane:
-mcoeff = princomp(cell2mat(C));
+%% Define a roughly orthogonal cutting plane:
+mcoeff = pca(cell2mat(C));
 cp_n = mcoeff(:,1);
 cp_u = mcoeff(:,2);
 cp_v = cross(cp_n,cp_u);
@@ -389,7 +389,7 @@ cla(ax)
 Loa = NaN(size(C,1),6);
 for k = 1:numel(C)
     ck = C{k};
-    lcoeff = princomp(ck);
+    lcoeff = pca(ck);
     loa_v = lcoeff(:,1);  % primary component
     loa_o = mean(ck);        % centroid
     loa = [loa_o(:)', loa_v(:)'];   % Initial definition of the line
