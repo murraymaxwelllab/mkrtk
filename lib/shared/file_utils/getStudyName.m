@@ -9,8 +9,49 @@ function studyname = getStudyName(pth)
 %
 % Trailing file separator can either be present or not
 
-c = path2cell(pth);
+studyname = new_method(gcbf);
 
+if isempty(studyname)
+    studyname = old_method(pth);
+end
+
+% Insure it's a variable safe string
+studyname = variablize(studyname);
+
+assert(~isempty(studyname),...
+    'GETSTUDYNAME could not create a study name from the path')
+
+
+%--------- New way of finding / contriving a study name ----
+function str = new_method(fig)
+
+% Use the figure name / title
+name = get(fig,'Name');
+
+
+exprs = {'MGR_\d*','mgr_\d*','MGR \d*','mgr \d*'};
+
+str = '';
+
+% Consecutively look for one of the above expressions until one is found,
+% or the list is exhausted
+for j = 1:numel(exprs)
+    
+    c = regexp(name,exprs{j},'match');
+    
+    if ~isempty(c)
+        str = c{1};
+        return
+    end
+end
+
+
+
+
+%--------- Old way of finding / contriving a study name ----
+function str = old_method(pth)
+
+c = path2cell(pth);
 
 
 % Case sensitive: 'DICOM'
@@ -46,8 +87,4 @@ else
     
 end
 
-% Insure it's a variable safe string
-studyname = variablize(c(idx));
-
-assert(~isempty(studyname),...
-    'GETSTUDYNAME could not create a study name from the path')
+str = c(idx);
