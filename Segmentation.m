@@ -22,7 +22,7 @@ function varargout = Segmentation(varargin)
 
 % Edit the above text to modify the response to help Segmentation
 
-% Last Modified by GUIDE v2.5 27-Mar-2013 10:39:59
+% Last Modified by GUIDE v2.5 24-Oct-2015 16:21:24
 
 % ------------------------------------------------------------------------
 % NOTES 
@@ -305,6 +305,50 @@ checked(hObject == hclrs) = {'on'};
 set(hclrs,{'Checked'},checked)
 
 
+
+% --------------------------------------------------------------------
+function MI_RemapRoiColour_Callback(hObject, eventdata, handles)
+% hObject    handle to MI_RemapRoiColour (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+traces_old = handles.traces;
+oldClrSet = unique({traces_old.Color})';
+
+
+newClrSet = remapRoiColorsDialog(oldClrSet);
+
+if isempty(newClrSet)
+    return
+end
+
+
+traces_new = traces_old;  % starting point
+all_old_clrs = {traces_old.Color};
+
+for j = 1:numel(newClrSet)
+    
+    % Only need to map those that are specified; skip others
+    if isempty( newClrSet{j} )
+        continue
+    end
+    
+    % Find all with the old colour
+    tf = strcmp(all_old_clrs, oldClrSet{j});
+    
+    [traces_new(tf).Color] = deal(newClrSet{j});
+end
+
+
+% Push back to handles
+handles.traces = traces_new;
+guidata(handles.figure1,handles);
+
+% Update
+updateSlice(handles)
+
+
+
 % --------------------------------------------------------------------
 function MI_Navigator_Callback(hObject, eventdata, handles)
 % hObject    handle to MI_Navigator (see GCBO)
@@ -484,6 +528,8 @@ function MI_Test_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Empty menu item available for use in testing new functions
+
+
 
 
 
@@ -765,3 +811,4 @@ for j = 1:numel(zvals)
     % So now: zvals(j) == zcurrent(sid)
     set(hslices(sid),'CData',stack(:,:,j)) 
 end
+
