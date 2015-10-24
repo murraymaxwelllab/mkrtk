@@ -662,6 +662,15 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% Catch for closing a figure opened direclty:
+if isempty(handles)
+    % Has been opened directly (ie, handles doesn't exist)
+    % close silently
+    closereq
+    return
+end
+    
+
 switch hObject
     
     case handles.figure1
