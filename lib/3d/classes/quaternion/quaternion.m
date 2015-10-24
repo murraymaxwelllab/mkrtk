@@ -644,24 +644,24 @@ methods
         % q = quaternions with norm == 1 (unless q == 0), n = former norms
         siz = size( q );
         nel = prod( siz );
-        ndm = length( siz );
         if nel == 0
             if nargout > 1
                 n   = zeros( siz );
             end
             return;
-        elseif nel > 1
-            nel = [];
         end
         d   = double( q );
         n   = sqrt( sum( d.^2, 1 ));
-        n4  = repmat( n, 4, nel );
+        if all( n(:) == 1 )
+            if nargout > 1
+                n   = shiftdim( n, 1 );
+            end
+            return;
+        end
+        n4  = repmat( n, [4, ones(1,ndims(n)-1)] );
         ne0 = (n4 ~= 0) & (n4 ~= 1);
         d(ne0)  = d(ne0) ./ n4(ne0);
-        neg     = repmat( reshape( d(1,:) < 0, [1 siz] ), ...
-                          [4, ones(1,ndm)] );
-        d(neg)  = -d(neg);
-        q       = reshape( quaternion( d ), siz );
+        q   = reshape( quaternion( d(1,:), d(2,:), d(3,:), d(4,:) ), siz );
         if nargout > 1
             n   = shiftdim( n, 1 );
         end
