@@ -694,6 +694,7 @@ if get(handles.radio_abscissa_angle,'Value')    % If 'angle' is selected
         ~isempty(handles.HelicalAxis)           %   ...and is populated
     theta = joint_dt_proxy(handles.Models);     % Then get joint angle from that
     else
+        disp('To use "phase angle", a joint / helical axis must be defined')
         set(handles.radio_abscissa_angle,  'Value',0)   % Switch to phase
         set(handles.radio_abscissa_phaseId,'Value',1)   %
     end
