@@ -444,7 +444,7 @@ end
 b = handles.Models(get(handles.Listbox_Models,'Value'));
 
 % Configure colours:
-if b.smoothed
+if b.issmoothed
     % If plotting smoothed states, plot raw in grey & smooth in colour
     rclrs = lines(4);%ones(4,3)*0.5;
     rwid = 0.5;
@@ -476,7 +476,7 @@ hy = plot(axset(2),r_xyz(:,2),'color',rclrs(2,:),rprops{:});
 hz = plot(axset(2),r_xyz(:,3),'color',rclrs(3,:),rprops{:});
 
 % Plot smoothed states if necessary:
-if b.smoothed
+if b.issmoothed
     set([hi,hj,hk, hx,hy,hz],'HandleVisibility','off')
     
     % Plot smoothed states over the top

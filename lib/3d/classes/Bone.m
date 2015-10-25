@@ -26,7 +26,7 @@ classdef Bone
 %   Tag         (Ordinary) Bone tag or name
 %   HiRes       (Ordinary) High Resolution (static) cloud objects
 %   LoRes       (Ordinary) Low Resolution (dynamic) cloud objects
-%   smoothed    (Ordinary) True/false - whether q & x return smoothed data
+%   issmoothed  (Ordinary) True/false - whether q & x return smoothed data
 %   q           (Dependent) Returns qsmooth if it is not empty, otherwise qraw
 %   x           (Dependent) Returns xsmooth if it is not empty, otherwise xraw
 %
@@ -71,13 +71,22 @@ classdef Bone
 %
 % See also CLOUD
 
+% Version Hisorty:
+%
+%   Version 1:  22-Nov-2012
+%       Initial version
+%
+%   Version 2:  25-Oct-2012
+%       Changed property "smoothed" to "issmoothed"
+%
+
 % Joshua Martin, 22-Nov-2012
 
 properties
     Tag = ''
     HiRes
     LoRes
-    smoothed = false
+    issmoothed = false
 end
 
 properties (Dependent=true)
@@ -85,12 +94,16 @@ properties (Dependent=true)
     x
 end
 
+properties (Hidden=true, Dependent=true)
+    smoothed  % backward compatibility -> now called "issmoothed"
+end
+
 properties (Hidden=true, SetAccess=private)
     qraw
     xraw
     qsmooth
     xsmooth
-    Version = 1
+    Version = 2
 end
 
 
@@ -119,7 +132,7 @@ methods
     % ------------------------------------------
     function b = clearsmoothing(b)
         % Remove smoothing and revert to raw pose states
-        [b.smoothed] = deal(false);
+        [b.issmoothed] = deal(false);
         [b.qsmooth] = deal([]);
         [b.xsmooth] = deal([]);
     end %clearsmoothing()
@@ -149,7 +162,7 @@ methods
                 
                 b(j).qsmooth = qj;      % update 
                 b(j).xsmooth = xj;      %
-                b(j).smoothed = true;
+                b(j).issmoothed = true;
             end
         end
         
@@ -158,6 +171,13 @@ methods
     
     %=====================================================================
     % Getter Methods
+    
+    % ------------------------------------------
+    function tf = get.smoothed(b)
+        % Getter method for backward compatibility of state ISSMOOTHED
+        % Simply returns ISSMOOHTED
+        tf = b.issmoothed;
+    end %get.q()
     
     % ------------------------------------------
     function q = get.q(b)

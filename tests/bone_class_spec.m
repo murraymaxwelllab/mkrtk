@@ -16,7 +16,7 @@ b = Bone();
 b.Tag;
 b.HiRes;
 b.LoRes;
-b.smoothed;
+b.issmoothed;
 
 % Dependent properties
 b.q;     % gets qsmooth if it's not empty, otherwise gets qraw
@@ -87,15 +87,15 @@ theta = [1:numel(q1)];
 span = numel(q1)-1;
 fun = @(y)smooth(theta,y,span,'moving');
 
-assertFalse(any([b.smoothed]))
+assertFalse(any([b.issmoothed]))
 
 b = b.smoothpose(fun);
 
-assertTrue(all([b.smoothed]))
+assertTrue(all([b.issmoothed]))
 
 b = b.clearsmoothing;
 
-assertFalse(any([b.smoothed]))
+assertFalse(any([b.issmoothed]))
 
 
 
