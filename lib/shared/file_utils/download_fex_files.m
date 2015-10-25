@@ -59,7 +59,7 @@ end
 if isstruct(varargin{1})
     s = varargin{1};
 else
-    s = cell2struct(varargin,'id',1);
+    s = cell2struct(varargin{:},'id',1);
 end
 if ~isfield(s,'ver')
     [s.ver] = deal('');
