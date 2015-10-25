@@ -210,10 +210,10 @@ function Edit_Width_Callback(hObject, eventdata, handles)
 
 %set_filter_width(hObject,handles.Slider_Width)
 
-% Check value
+% Check value of editbox is within range of slider:
 v = str2double(get(hObject,'String'));
 
-hs = handles.Slider_Width;
+hs = handles.Slider_Width;  % Handle to width slider
 
 if ~( isnumeric(v) && isfinite(v) )
     v = get(hs,'Value');
@@ -236,10 +236,8 @@ end
 set(hObject,'String',num2str(v));
 set(hs,'Value',v)
 
-% Re-calculate if there has been any value change:
-if v ~= v_old
-    doCalcs(handles)
-end
+% Re-calculate
+doCalcs(handles)
 
 
 % --- Executes during object creation, after setting all properties.
