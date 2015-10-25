@@ -94,11 +94,11 @@ end
 % Same as:
 %   b) Springer Handbook of Robotics, Springer, 2008, p.16
 %       http://books.google.com.au/books?id=Xpgi5gSuBxsC&pg=PA16
-sign = @(x)(x>=0)*2-1;  % same as Matlab's sign(x), but assigns sign(0)==+1;
+signf = @(x)(x>=0)*2-1;  % same as Matlab's sign(x), but assigns sign(0)==+1;
 m = [R(3,2) - R(2,3), R(1,3) - R(3,1), R(2,1) - R(1,2)];
-theta = sign(m*d') * abs( acos( (trace(R)-1)/2 ) );
-w = m/(2*sin(theta));
-rho = (eye(3) - R')*d'/(2*(1-cos(theta))); % <- point on the axis
+theta1 = signf(m*d') * abs( acos( (trace(R)-1)/2 ) );
+axs1 = m/(2*sin(theta1));
+rho = (eye(3) - R')*d'/(2*(1-cos(theta1))); % <- point on the axis
 rho = rho';
 
 % Method 2):
@@ -126,7 +126,7 @@ pt = (cross(b, (d - cross(b,d))))/(2*dot(b,b));
 % Carry out checks if matlab function has also been used:
 if exist('v','var') % calculated above with vrrotmat2vec
     if ( max( abs(axs - v(1:3)) ) > 1e12 ) ||...
-       ( max( abs(axs - w) ) > 1e12 )
+       ( max( abs(axs - axs1) ) > 1e12 )
         fprintf('Axis solutions differ...\n')
         keyboard
     end
@@ -134,6 +134,20 @@ if exist('v','var') % calculated above with vrrotmat2vec
         fprintf('Point solutions differ...\n')
         keyboard
     end
+else % Check with Springer Robotics solution:
+    % Signs could be different
+    %swapsign = signf(theta) ~= signf(theta1)
+    if ( (theta - theta1) > 1e12 ) || ...
+            ( max(abs(axs-axs1)) > 1e12 )
+        fprintf('Axis solutions differ...INVESTIGATE.\n')
+        keyboard
+    end
+    
+    if max( abs(pt - pt_star) ) > 1e12
+        fprintf('Point solutions differ...INVESTIGATE.\n')
+        keyboard
+    end
+        
 end
 
 
