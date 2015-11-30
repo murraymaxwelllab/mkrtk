@@ -22,7 +22,7 @@ function varargout = Analysis3DGui(varargin)
 
 % Edit the above text to modify the response to help Analysis3DGui
 
-% Last Modified by GUIDE v2.5 22-Oct-2012 15:10:42
+% Last Modified by GUIDE v2.5 24-Oct-2015 18:35:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,21 +68,21 @@ end
 % structure.
 
 % Now, VARARGIN should contain the following:
-%   #1  1-by-N cell array of object tags which are candidates for using in helical axis definitions 
+%   #1  1-by-N cell array of object tags which are candidates for using in articulation definitions 
 %   #2  1-by-N cell array of object tags which are candidates for using in line of action definitions 
-%   #3  1-by-N struct array of HelicalAxis definitions
+%   #3  1-by-N struct array of Articulation definitions
 %   #4  1-by-N struct array of LineOfAction definitions
 %   #5  1-by-N strucy array of MomentArm definitions
 %
 % As follows:
-%   varargin = { HaxCandTags, LoaCandTags, HelicalAxes, LinesOfAction, MomentArms }
-    
+%   varargin = { ArticCandTags, LoaCandTags, Articulations, LinesOfAction, MomentArms }
+
 
 % Manage input #1: Cell array of object tags which are candidates for being
-%                  used in helical axis calculations:
-handles.AxisCandidates = varargin{1}(:);    % Bone Names in column format
-set(handles.HaxObj1Popup,'String',handles.AxisCandidates)   %\ Populate listboxes
-set(handles.HaxObj2Popup,'String',handles.AxisCandidates)   %/ 
+%                  used as articulations for helical axis calculations:
+handles.ArticulationCandidates = varargin{1}(:);    % Bone Names in column format
+set(handles.ArticObj1Popup,'String',handles.ArticulationCandidates)   %\ Populate listboxes
+set(handles.ArticObj2Popup,'String',handles.ArticulationCandidates)   %/ 
 
 % Manage input #2: Cell array of object tags which are candidates for being
 %                  used in line of action calculations:
@@ -90,15 +90,15 @@ handles.LineCandidates = varargin{2}(:);
 set(handles.LoaObjPopup,'String',handles.LineCandidates)      
 
 % Deal other inputs:
-[hax,loa,marm] = varargin{3:end};
+[artic,loa,marm] = varargin{3:end};
 
 % Store for checking outputs:
-handles.inputs.hax = hax;
+handles.inputs.artic = artic;
 handles.inputs.loa = loa;
 handles.inputs.marm = marm;
 
 % Write info into gui uicontrols:
-populateList('Hax',hax,handles.HaxDefnListbox,handles.DisplayHaxCheckbox);
+populateList('Artic',artic,handles.ArticDefnListbox,handles.DisplayArticCheckbox);
 populateList('Loa',loa,handles.LoaDefnListbox,handles.DisplayLoaCheckbox);
 populateList('Marm',marm,handles.MarmDefnListbox,handles.DisplayMarmCheckbox);
 
@@ -107,8 +107,8 @@ positionOver(handles.figure1,gcbf);
 
 % Configure some button pictures:
 load('icons.mat');
-set(handles.NewHaxButton,'CData',icons.rightarrow)
-set(handles.DelHaxButton,'CData',icons.delete_grey)
+set(handles.NewArticButton,'CData',icons.rightarrow)
+set(handles.DelArticButton,'CData',icons.delete_grey)
 set(handles.NewLoaButton,'CData',icons.rightarrow)
 set(handles.DelLoaButton,'CData',icons.delete_grey)
 set(handles.NewMarmButton,'CData',icons.rightarrow)
@@ -118,28 +118,29 @@ set(handles.DelMarmButton,'CData',icons.delete_grey)
 handles.dklist = {'delete','del','backspace'};  % Delete key options
 
 % Add some tooltips
-set(handles.HaxDefnListbox,'Tooltip',ttgen('HAx'))
+set(handles.ArticDefnListbox,'Tooltip',ttgen('Artic'))
+set(handles.DisplayArticCheckbox,'Tooltip',ttgen('Display_artic'))
 set(handles.LoaDefnListbox,'Tooltip',ttgen('LoA'))
 set(handles.MarmDefnListbox,'Tooltip',ttgen('Marm'))
 
 % Listeners to control list selection (value):
-addlistener(handles.HaxDefnListbox, 'String','PostSet',@selectionInBounds);
+addlistener(handles.ArticDefnListbox, 'String','PostSet',@selectionInBounds);
 addlistener(handles.LoaDefnListbox, 'String','PostSet',@selectionInBounds);
 addlistener(handles.MarmDefnListbox,'String','PostSet',@selectionInBounds);
 addlistener(handles.MarmObj1Popup,  'String','PostSet',@selectionInBounds);
 addlistener(handles.MarmObj2Popup,  'String','PostSet',@selectionInBounds);
 
 % Listeners to keep moment arm stuff up to date:
-addlistener(handles.HaxDefnListbox,'String','PostSet',@updateMarmPopups);
+addlistener(handles.ArticDefnListbox,'String','PostSet',@updateMarmPopups);
 addlistener(handles.LoaDefnListbox,'String','PostSet',@updateMarmPopups);
-addlistener(handles.HaxDefnListbox,'Value','PostSet',@updateMarmPopups);
+addlistener(handles.ArticDefnListbox,'Value','PostSet',@updateMarmPopups);
 addlistener(handles.LoaDefnListbox,'Value','PostSet',@updateMarmPopups);
-updateMarmPopups(handles.HaxDefnListbox);
+updateMarmPopups(handles.ArticDefnListbox);
 updateMarmPopups(handles.LoaDefnListbox);
 
 % Listeners to keep the moment arm 
-addlistener(handles.HaxDefnListbox,'Value','PostSet',@updateHaxPopups);
-updateHaxPopups(handles.HaxDefnListbox);
+addlistener(handles.ArticDefnListbox,'Value','PostSet',@updateArticPopups);
+updateArticPopups(handles.ArticDefnListbox);
 
 % Focus "OK" button
 uicontrol(handles.OkButton)
@@ -159,26 +160,26 @@ function varargout = Analysis3DGui_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on selection change in HaxObj1Popup.
-function HaxObj1Popup_Callback(hObject, eventdata, handles)
-% hObject    handle to HaxObj1Popup (see GCBO)
+% --- Executes on selection change in ArticObj1Popup.
+function ArticObj1Popup_Callback(hObject, eventdata, handles)
+% hObject    handle to ArticObj1Popup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns HaxObj1Popup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from HaxObj1Popup
+% Hints: contents = cellstr(get(hObject,'String')) returns ArticObj1Popup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from ArticObj1Popup
 
 
 % --- Executes during object creation, after setting all properties.
-function HaxObj1Popup_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to HaxObj1Popup (see GCBO)
+function ArticObj1Popup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ArticObj1Popup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 
-% --- Executes on selection change in HaxDefnListbox.
-function HaxDefnListbox_Callback(hObject, eventdata, handles)
-% hObject    handle to HaxDefnListbox (see GCBO)
+% --- Executes on selection change in ArticDefnListbox.
+function ArticDefnListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to ArticDefnListbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -187,16 +188,16 @@ if strcmpi( 'open', get(handles.figure1,'SelectionType'))
 end
 
 % --- Executes during object creation, after setting all properties.
-function HaxDefnListbox_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to HaxDefnListbox (see GCBO)
+function ArticDefnListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ArticDefnListbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 
 
-% --- Executes on key press with focus on HaxDefnListbox and none of its controls.
-function HaxDefnListbox_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to HaxDefnListbox (see GCBO)
+% --- Executes on key press with focus on ArticDefnListbox and none of its controls.
+function ArticDefnListbox_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to ArticDefnListbox (see GCBO)
 % eventdata  structure with the following fields (see UICONTROL)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -206,23 +207,23 @@ function HaxDefnListbox_KeyPressFcn(hObject, eventdata, handles)
 if isempty(eventdata.Modifier) && ...
         any(strcmpi(eventdata.Key,handles.dklist))
         % Delete currently selected line item:
-        runCallback(handles.DelHaxButton)
+        runCallback(handles.DelArticButton)
 end
 
 
-% --- Executes on selection change in HaxObj2Popup.
-function HaxObj2Popup_Callback(hObject, eventdata, handles)
-% hObject    handle to HaxObj2Popup (see GCBO)
+% --- Executes on selection change in ArticObj2Popup.
+function ArticObj2Popup_Callback(hObject, eventdata, handles)
+% hObject    handle to ArticObj2Popup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns HaxObj2Popup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from HaxObj2Popup
+% Hints: contents = cellstr(get(hObject,'String')) returns ArticObj2Popup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from ArticObj2Popup
 
 
 % --- Executes during object creation, after setting all properties.
-function HaxObj2Popup_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to HaxObj2Popup (see GCBO)
+function ArticObj2Popup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ArticObj2Popup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -233,42 +234,42 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in NewHaxButton.
-function NewHaxButton_Callback(hObject, eventdata, handles)
-% hObject    handle to NewHaxButton (see GCBO)
+% --- Executes on button press in NewArticButton.
+function NewArticButton_Callback(hObject, eventdata, handles)
+% hObject    handle to NewArticButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cstr = get(handles.HaxDefnListbox,'String');
+cstr = get(handles.ArticDefnListbox,'String');
 
 if numel(cstr) >= 9
-    warndlg('Only up to 9 axis definitions permitted','Max definitions permitted','modal')
+    warndlg('Only up to 9 definitions permitted','Max definitions permitted','modal')
     return
 end
 
-obj1 = current_item(handles.HaxObj1Popup);
-obj2 = current_item(handles.HaxObj2Popup);
+obj1 = current_item(handles.ArticObj1Popup);
+obj2 = current_item(handles.ArticObj2Popup);
 
-cstr = editList('add','Hax',cstr,obj1,obj2);
+cstr = editList('add','Artic',cstr,obj1,obj2);
 
 % Update list box:
-set(handles.HaxDefnListbox,'String',cstr);
+set(handles.ArticDefnListbox,'String',cstr);
 
 
 
-% --- Executes on button press in DelHaxButton.
-function DelHaxButton_Callback(hObject, eventdata, handles)
-% hObject    handle to DelHaxButton (see GCBO)
+% --- Executes on button press in DelArticButton.
+function DelArticButton_Callback(hObject, eventdata, handles)
+% hObject    handle to DelArticButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get listbox info
-val = get(handles.HaxDefnListbox,'Value');
-cstr = get(handles.HaxDefnListbox,'String');
+val = get(handles.ArticDefnListbox,'Value');
+cstr = get(handles.ArticDefnListbox,'String');
 
 % Edit the list and record the old and new information
 old = html2cell(cstr);                      % Contents as a cell removing item
-cstr = editList('remove','Hax',cstr,val);   % Remove item
+cstr = editList('remove','Artic',cstr,val);   % Remove item
 new = html2cell(cstr);                      % Contents as a cell after item
 
 % Now update the Moment Arm listbox using the changes:
@@ -277,19 +278,19 @@ oldList = old{1};                                   % New variable for clarity
 MarmListUpdater(handles,oldList,newList)            % Update the Moment Arm list
 
 % Update
-set(handles.HaxDefnListbox,'String',cstr);
+set(handles.ArticDefnListbox,'String',cstr);
 
 % Focus the listbox
-uicontrol(handles.HaxDefnListbox)
+uicontrol(handles.ArticDefnListbox)
 
 
-% --- Executes on button press in DisplayHaxCheckbox.
-function DisplayHaxCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to DisplayHaxCheckbox (see GCBO)
+% --- Executes on button press in DisplayArticCheckbox.
+function DisplayArticCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to DisplayArticCheckbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of DisplayHaxCheckbox
+% Hint: get(hObject,'Value') returns toggle state of DisplayArticCheckbox
 
 
 % --- Executes on selection change in LoaDefnListbox.
@@ -447,7 +448,7 @@ function NewMarmButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-obj1 = current_item(handles.HaxDefnListbox);
+obj1 = current_item(handles.ArticDefnListbox);
 obj2 = current_item(handles.LoaDefnListbox);
 
 % Check that the user has defined other geometry.
@@ -504,7 +505,7 @@ for j = 1:numel(f)
 end
 % Clear listboxes:
 C ={};
-set(handles.HaxDefnListbox,'String',C);
+set(handles.ArticDefnListbox,'String',C);
 set(handles.LoaDefnListbox,'String',C);
 set(handles.MarmDefnListbox,'String',C);
 % Update data:
@@ -570,11 +571,11 @@ switch hObject
         
         try
         % Build output:
-        hax = html2cell(get(handles.HaxDefnListbox,'String'));
+        artic = html2cell(get(handles.ArticDefnListbox,'String'));
         loa = html2cell(get(handles.LoaDefnListbox,'String'));
         marm = html2cell(get(handles.MarmDefnListbox,'String'));
         
-        vis = [get(handles.DisplayHaxCheckbox,'Value'),...
+        vis = [get(handles.DisplayArticCheckbox,'Value'),...
             get(handles.DisplayLoaCheckbox,'Value'),...
             get(handles.DisplayMarmCheckbox,'Value')];
         
@@ -582,38 +583,22 @@ switch hObject
         % same as the input form, so see the OpeningFcn as well for reading
         % the structure in.
 
-        Helical = struct('Tag',{},...
-            'Item1',{},...
-            'Item2',{},...
-            'Visible',{},...
-            'Axis',{},...
-            'Angle',{},...
-            'Point',{},...
-            'Slide',{});
-        LineAction = struct('Tag',{},...
-            'Item',{},...
-            'Visible',{},...
-            'Point',{},...
-            'Vector',{});
-        MomentArm = struct('Tag',{},...
-            'Item1',{},...
-            'Item2',{},...
-            'Visible',{},...
-            'Point1',{},...
-            'Point2',{},...
-            'Length',{});
+        Articulation = define_joint();
+        LineAction = define_lineofaction();
+        MomentArm = define_momentarm();
         
         % Expand to size:
-        [Helical(1:numel(hax{1})).Tag] = deal('');
+        [Articulation(1:numel(artic{1})).Tag] = deal('');
         [LineAction(1:numel(loa{1})).Tag] = deal('');
         [MomentArm(1:numel(marm{1})).Tag] = deal('');
         
         % Helper function:
         getrow = @(defn,j)cellfun(@(x)x{j},defn,'UniformOutput',false);
         
+      
         % Create / update Helical Axes:
-        for j = 1:numel(hax{1})
-            Helical(j) = configureOutputStruct(Helical(j),handles.inputs.hax,getrow(hax,j),vis(1));
+        for j = 1:numel(artic{1})
+            Articulation(j) = configureOutputStruct(Articulation(j),handles.inputs.artic,getrow(artic,j),vis(1));
         end
         
         % Create / update Lines of Action:
@@ -639,7 +624,7 @@ switch hObject
         end
         
         % Populate output field:
-        handles.output = {Helical,LineAction,MomentArm};
+        handles.output = {Articulation,LineAction,MomentArm};
         
         % Update gui
         guidata(hObject,handles)
@@ -699,7 +684,7 @@ function populateList(opt,hstruct,listbox,checkbox)
 %
 % OPT is one of the options as per EDITLIST.
 %
-% HSTRUCT is the input/output structure of any of the axis definitions
+% HSTRUCT is the input/output structure of any of the joint definitions
 
 if ~isempty(hstruct)
     
@@ -760,9 +745,9 @@ w = pw;
 
 % Create popup contents:
 switch get(hobj,'Tag')
-    case 'HaxDefnListbox'
-        tag = 'Hax';
-        str{1} = handles.AxisCandidates;
+    case 'ArticDefnListbox'
+        tag = 'Artic';
+        str{1} = handles.ArticulationCandidates;
         str{2} = str{1};
     case 'LoaDefnListbox'
         tag = 'Loa';
@@ -783,7 +768,7 @@ hp1 = uicontrol(hf,'Style','popupmenu',...
 
 % Create second popup:
 x = x+w+sep/2;
-if numel(str)==2  % For: {'HaxDefnListbox', 'MarmDefnListbox'}
+if numel(str)==2  % For: {'ArticDefnListbox', 'MarmDefnListbox'}
     val2 = find(strcmpi(c{3},str{2}));
     hp2 = uicontrol(hf,'Style','popupmenu',...
         'Tag','Popup2',...
@@ -840,9 +825,9 @@ delete(hf)
 function cstr = editList(opt,list,cstr,varargin)
 % Edit one of the following lists to keep it updated:
 %
-%   'Hax'   Helical Axis
-%   'LoA'   Line of Action 
-%   'Marm'  Moment Arm
+%   'Artic'   Articulation
+%   'LoA'     Line of Action 
+%   'Marm'    Moment Arm
 %
 % Usage:
 %   
@@ -869,8 +854,8 @@ switch opt
         k = size(cstr,1)+1; % Item number / list position
         sep = '&bull;';     % separator for two-item definitions
         switch lower(list)
-            case 'hax'
-                str = sprintf('<html><b>Axis_%d:</b> %s %s %s</html>',k,obj1,sep,obj2);
+            case 'artic'
+                str = sprintf('<html><b>Joint_%d:</b> %s %s %s</html>',k,obj1,sep,obj2);
                 
             case 'loa'
                 str = sprintf('<html><b>Line_%d:</b> %s</html>',k,obj1);
@@ -953,7 +938,12 @@ end
 function str = current_item(hObj)
 % Function to easily get the string of the current list item
 cstr = get(hObj,'string');
-str = cstr{get(hObj,'Value')};
+if isempty(cstr)
+    str = '';
+else
+    str = cstr{get(hObj,'Value')};
+end
+
 
 
 % ------------------------------------------------------------------------
@@ -965,39 +955,46 @@ function html_str = ttgen(opt)
 %
 
 switch upper(opt)
-    case 'HAX'
-        html_str = ['<html><b>Helical Axis</b><br>'...
-            'A helical axis is defined by the motion one object<br>'...
-            'relative to another.',...
+    case {'ARTIC','ARTICULATION'}
+        html_str = ['<html><b>Joint</b><br>'...
+            'An articulation, or joint, is defined by movement of one <br>'...
+            'object relative to another. Rotation at a joint occurs <br>',...
+            'around a helical axis.',...
             '</html>'];
+        
+    case 'DISPLAY_ARTIC'
+        html_str = ['<html>Display helical axis for this joint when one can be calculated',...
+            '</html>'];
+        
         
     case 'LOA'
         html_str = ['<html><b>Line of Action</b><br>',...
             'A line of action defines the axis of a force which acts<br>',...
-            'to produce rotation about the helical axis.',...
+            'to produce joint rotation about the helical axis.',...
             '</html>'];
         
     case 'MARM'
         html_str = ['<html><b>Moment Arm</b><br>',...
             'The moment arm of a force is the shortest distance between<br>',...
-            'the line of action of the force and the axis about which<br>',...
-            'the object is rotating.  Additionally, the moment arm is<br>'...
+            'the line of action of the force and the axis about which the<br>',...
+            'object is rotating.  Additionally, the moment arm is<br>'...
             'also mutually perpendicular to the two vectors.',...
             '</html>'];
+    
         
 end
 
 
 % ------------------------------------------------------------------------
-function updateHaxPopups(schemaORhobj,eventdata)
-%Keep Helical Axis popup menus in line with the components of the currently
-%seleced item in the Helical Axis definition listbox
+function updateArticPopups(schemaORhobj,eventdata)
+%Keep Articulation popup menus in line with the components of the currently
+%seleced item in the Articulation definition listbox
 %
 % Manual call, either of:
-%   updateHaxPopups(handles.HaxDefnListbox)
+%   updateArticPopups(handles.ArticDefnListbox)
 %
 % Listener call:
-%   updateHaxPopups(schema,eventdata)
+%   updateArticPopups(schema,eventdata)
 
 if nargin == 1              % Manual call
     hobj = schemaORhobj;
@@ -1015,21 +1012,21 @@ handles = guidata(hobj);
 val = get(hobj,'Value');
 C = html2cell(get(hobj,'String'));
 
-% Configure HaxObj1Popup:
-c1 = get(handles.HaxObj1Popup,'String');
+% Configure ArticObj1Popup:
+c1 = get(handles.ArticObj1Popup,'String');
 id1 = find(strcmpi(c1,C{2}(val)));
-set(handles.HaxObj1Popup,'Value',id1);
+set(handles.ArticObj1Popup,'Value',id1);
 
-% Configure HaxObj2Popup:
-c2 = get(handles.HaxObj2Popup,'String');
+% Configure ArticObj2Popup:
+c2 = get(handles.ArticObj2Popup,'String');
 id2 = find(strcmpi(c2,C{3}(val)));
-set(handles.HaxObj2Popup,'Value',id2);
+set(handles.ArticObj2Popup,'Value',id2);
 
 
 % ------------------------------------------------------------------------
 function updateMarmPopups(schemaORhobj,eventdata)
 % Manual call, either of:
-%   updateMarmPopup(handles.HaxDefnListbox)
+%   updateMarmPopup(handles.ArticDefnListbox)
 %   updateMarmPopup(handles.LoaDefnListbox)
 %
 % Listener call:
@@ -1046,7 +1043,7 @@ handles = guidata(hobj);
 defn_cell = html2cell(get(hobj,'String'));
 value     = get(hobj,'Value');
 switch get(hobj,'Tag')
-    case 'HaxDefnListbox'
+    case 'ArticDefnListbox'
         target = handles.MarmObj1Popup;
     case 'LoaDefnListbox'
         target = handles.MarmObj2Popup;
@@ -1066,7 +1063,7 @@ function MarmListUpdater(handles,oldNames,newNames)
 %MARMLISTUPDATER Keep the moment arm definition list up to date
 %
 %   The main problem with keeping the Moment arm list up to date is that
-%   when the user deletes a helical axis or a line of action, any higher
+%   when the user deletes an articulation or a line of action, any higher
 %   items in those lists get re-numbered.  So here we take care of both
 %   removing any moment arms that reference deleted definitions, and also
 %   replacing the higher elements with their new defintions.
