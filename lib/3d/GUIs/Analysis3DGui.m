@@ -870,6 +870,9 @@ switch opt
     case 'remove'
         % Remove the specified list item
         j = varargin{1};
+        if isempty(cstr)    % Don't bother if there's nothing in the list
+            return
+        end
         cstr(j) = [];
         cstr = re_enumerate(cstr);
 end
