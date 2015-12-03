@@ -9,7 +9,8 @@ bone*.txt
 ._*.m
 
 # Ignore FEX download directories:
-#lib/shared/externals/FEX\ Functions/*
+lib/shared/externals/FEX\ Functions/*
+
 
 # Temporary directories:
 lib/shared/externals/FEX\ Functions/geom*

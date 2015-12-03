@@ -1,6 +1,6 @@
 function varargout = find_structs_with_tag(varargin)
 % FIND_STRUCTS_WITH_TAG Search all input structs for structs which have
-% specified tag(s).  Multiptle tags can be specified, and multiple input
+% specified tag(s).  Multiple tags can be specified, and multiple input
 % structures of any dimension can be passed in, in any order.
 %
 % Note: finds from later structs overwrite finds from earlier structs.
