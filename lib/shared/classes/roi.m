@@ -1188,7 +1188,7 @@ dj = PixelSpacing(2);
 
 % Mapping matrix:
 M = [...
-    Xx*di Yy*dj 0 Sx
+    Xx*di Yx*dj 0 Sx
     Xy*di Yy*dj 0 Sy
     Xz*di Yz*dj 0 Sz
       0     0   0  1 ];
