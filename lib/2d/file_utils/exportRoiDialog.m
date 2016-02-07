@@ -208,6 +208,11 @@ tags = get(hedits,'Tag');
 clrs = regexprep(tags,'_edit_','');
 fnames = get(hedits,'String');
 
+% Force fnames to be cell array:
+if ischar(fnames)
+    fnames = {fnames};
+end
+
 % Remove ones with empty names:
 id = cellfun(@isempty,fnames);
 clrs(id) = [];

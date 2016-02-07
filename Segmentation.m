@@ -440,9 +440,11 @@ end
 clrs = unique({handles.traces.Color});
 [colorstrings, pathstrings] = exportRoiDialog(clrs);
 
-% If user cancelled:
-if isempty(colorstrings)
-    return
+% Special cases:
+if isempty(colorstrings)    % If user cancelled:
+    return                  % exit
+elseif ischar(colorstrings)     % Only one item in list
+    colorstrings = {colorstrings};
 end
 
 % Save ROIs according to color
